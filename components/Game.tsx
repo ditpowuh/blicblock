@@ -22,21 +22,21 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
 
   const [boardState, setBoardState] = useState<BlockID[][]>(generateEmptyGrid(width, height));
 
-  const [dropSpeed, setDropSpeed] = useState(1000);
-  const [mounted, setMounted] = useState(false);
+  const [dropSpeed, setDropSpeed] = useState<number>(1000);
+  const [mounted, setMounted] = useState<boolean>(false);
 
-  const [gameOver, setGameOver] = useState(false);
-  const [gamePause, setGamePause] = useState(false);
+  const [gameOver, setGameOver] = useState<boolean>(false);
+  const [gamePause, setGamePause] = useState<boolean>(false);
 
-  const lastTime = useRef(0);
-  const lastDrop = useRef(0);
-  const delay = useRef(0);
+  const lastTime = useRef<number>(0);
+  const lastDrop = useRef<number>(0);
+  const delay = useRef<number>(0);
 
-  const rafID = useRef<number>();
+  const rafID = useRef<number>(0);
 
   const colors: Record<number, string> = Object.fromEntries(blockColors.map((color, index) => [index + 1, color]));
 
-  const sizing = {
+  const sizing: React.CSSProperties = {
     width: blockSize * width + blockGap * (width - 1),
     height: blockSize * height  + blockGap * (height - 1),
     gridTemplateColumns: `repeat(${width}, ${blockSize}px)`,
@@ -62,7 +62,6 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
       }
       if (event.key === "ArrowRight") {
         setCurrentBlockPosition((previous) => {
-          console.log(previous);
           if (previous.x < width && previous.y > 0) {
             if (boardState[previous.y - 1][previous.x] === 0) {
               return {x: previous.x + 1, y: previous.y};
