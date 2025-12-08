@@ -1,0 +1,6 @@
+.board {
+  display: grid;
+  background: #111111;
+  border: 5px solid #3A335D;
+  margin: 0 auto;
+}
