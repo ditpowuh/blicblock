@@ -2,11 +2,11 @@ import styles from "./Block.module.css";
 
 interface BlockProps {
   color?: string;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
 }
 
-export default function Block({color = "#ffffff", x, y}: BlockProps) {
+export default function Block({color = "#ffffff", x = 1, y = 1}: BlockProps) {
   const generatedBackground: React.CSSProperties = {
     backgroundImage: `linear-gradient(to bottom, ${color}, ${color} 50%, color-mix(in srgb, ${color}, #000000 10%) 50%, color-mix(in srgb, ${color}, #000000 10%))`,
     backgroundSize: `100% ${100 / 4.5}%`

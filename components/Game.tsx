@@ -6,6 +6,13 @@ import {useState, useEffect, useRef} from "react";
 import Block from "@/components/Block";
 import {randomNumber, generateEmptyGrid} from "@/lib/utility";
 
+import CustomFont from "next/font/local";
+
+const handwrittenSimlishFont = CustomFont({
+  src: "../public/Fonts/Handwritten Simlish.woff2",
+  fallback: ["sans-serif"]
+});
+
 type BlockID = number;
 
 interface GameProps {
@@ -27,6 +34,9 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
 
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [gamePause, setGamePause] = useState<boolean>(false);
+
+  const [level, setLevel] = useState<number>(1);
+  const [score, setScore] = useState<number>(0);
 
   const lastTime = useRef<number>(0);
   const lastDrop = useRef<number>(0);
@@ -100,7 +110,8 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
                 return newBoard;
               });
 
-              return [...queue.slice(1), randomNumber(1, blockColors.length)];
+              const newBlock = randomNumber(1, blockColors.length);
+              return [...queue.slice(1), newBlock];
             });
           }
           else {
@@ -130,25 +141,40 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
   }
 
   return (
-    <div className={styles.game}>
-      <div className={styles.score}></div>
-      <div className={styles.board} style={{...sizing}}>
-        {!gameOver && <Block color={colors[currentBlockQueue[0]]} x={currentBlockPosition.x} y={currentBlockPosition.y}/>}
-        {
-          boardState.map((row, rowIndex) => {
-            return row.map((cell, colIndex) => {
-              if (cell !== 0) {
-                return (
-                  <Block key={`${rowIndex + 1}-${colIndex + 1}`} color={colors[cell]} x={colIndex + 1} y={rowIndex + 1}/>
-                );
-              }
-              return null;
-            })
-          })
-        }
+    <div className={`${styles.game} ${handwrittenSimlishFont.className}`}>
+      <div className={styles.score} style={{width: blockSize * width + blockGap * (width - 1), fontSize: blockSize / 2, letterSpacing: blockSize / 15}}>
+        <div className={styles.content}>{score}</div>
       </div>
-      <div className={styles.upcoming}>
-
+      <div className={styles.main}>
+        <div className={styles.levelpanel} style={{width: blockSize * 1.5, height: blockSize * 1.5}}>
+          <div className={styles.content}>
+            <div style={{fontSize: blockSize / 3, marginTop: blockSize / 3}}>LEVEL</div>
+            <div style={{fontSize: blockSize / 2, marginTop: blockSize / 9}}>{level}</div>
+          </div>
+        </div>
+        <div className={styles.board} style={{...sizing}}>
+          {!gameOver && <Block color={colors[currentBlockQueue[0]]} x={currentBlockPosition.x} y={currentBlockPosition.y}/>}
+          {
+            boardState.map((row, rowIndex) => {
+              return row.map((cell, colIndex) => {
+                if (cell !== 0) {
+                  return (
+                    <Block key={`${rowIndex + 1}-${colIndex + 1}`} color={colors[cell]} x={colIndex + 1} y={rowIndex + 1}/>
+                  );
+                }
+                return null;
+              })
+            })
+          }
+        </div>
+        <div className={styles.upcomingpanel} style={{width: blockSize * 1.5, height: blockSize * 3}}>
+          <div className={styles.upcomingblocks} style={{width: blockSize * 0.75, height: blockSize * 0.75, marginTop: blockSize * 1.5 / 4, marginBottom: blockSize * 1.5 / 2}}>
+            <Block color={colors[currentBlockQueue[1]]}/>
+          </div>
+          <div className={styles.upcomingblocks} style={{width: blockSize * 0.75, height: blockSize * 0.75, marginTop: blockSize * 1.5 / 2, marginBottom: blockSize * 1.5 / 4}}>
+            <Block color={colors[currentBlockQueue[2]]}/>
+          </div>
+        </div>
       </div>
     </div>
   );

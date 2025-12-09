@@ -9,11 +9,11 @@ import Block from "@/components/Block";
 export default function Home() {
   const colors = [
     "#ffffff",
-    "#439cae",
-    "#AF197C",
-    "#B7A45D",
-    "#6EAB34",
-    "#AF6D19"
+    "#5ac6db",
+    "#e022b1",
+    "#fae07f",
+    "#a4f558",
+    "#d98821"
   ];
 
   return (
