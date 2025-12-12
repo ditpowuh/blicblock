@@ -1,4 +1,21 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 body {
   background: linear-gradient(0deg, #150d26 0%, #1d1136 50%, #150d26 100%);
   color: #ffffff;
+}
+
+main {
+  display: flex;
+  min-height: 100%;
+}
+
+.unselectable {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

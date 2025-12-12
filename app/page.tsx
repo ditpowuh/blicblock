@@ -18,7 +18,9 @@ export default function Home() {
 
   return (
     <>
-      <Game width={5} height={7} blockSize={100} blockGap={4} blockColors={colors}/>
+      <div className={styles.content}>
+        <Game width={5} height={7} blockSize={100} blockGap={4} blockColors={colors}/>
+      </div>
     </>
   );
 }

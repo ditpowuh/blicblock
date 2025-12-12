@@ -111,7 +111,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
               });
 
               const newBlock = randomNumber(1, blockColors.length);
-              return [...queue.slice(1), newBlock];
+              return [...currentBlockQueue.slice(1), newBlock];
             });
           }
           else {
@@ -143,13 +143,13 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
   return (
     <div className={`${styles.game} ${handwrittenSimlishFont.className}`}>
       <div className={styles.score} style={{width: blockSize * width + blockGap * (width - 1), fontSize: blockSize / 2, letterSpacing: blockSize / 15}}>
-        <div className={styles.content}>{score}</div>
+        <div className={`${styles.content} unselectable`} style={{paddingLeft: blockSize / 15}}>{score}</div>
       </div>
       <div className={styles.main}>
         <div className={styles.levelpanel} style={{width: blockSize * 1.5, height: blockSize * 1.5}}>
-          <div className={styles.content}>
+          <div className={`${styles.content} unselectable`}>
             <div style={{fontSize: blockSize / 3, marginTop: blockSize / 3}}>LEVEL</div>
-            <div style={{fontSize: blockSize / 2, marginTop: blockSize / 9}}>{level}</div>
+            <div style={{fontSize: blockSize / 2, marginTop: blockSize / 9, letterSpacing: blockSize / 15}}>{level}</div>
           </div>
         </div>
         <div className={styles.board} style={{...sizing}}>
