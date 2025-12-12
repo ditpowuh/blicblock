@@ -99,7 +99,9 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
       lastTime.current = time;
 
       setBoardState((board) => {
-        return processTetrominoes(board, width, height, blockColors.length);
+        const {points, state} = processTetrominoes(board, width, height, blockColors.length);
+        setScore(score => score + points);
+        return state;
       });
 
       if ((lastTime.current > lastDrop.current + dropSpeed + delay.current || fastDrop.current === true) && !gameOver) {
@@ -147,6 +149,14 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
     };
   }, [boardState, dropSpeed]);
 
+  useEffect(() => {
+    setLevel(Math.floor(score / 4000) + 1);
+  }, [score]);
+
+  useEffect(() => {
+    setDropSpeed(previous => previous - previous * 0.09)
+  }, [level]);
+  
   if (!mounted) {
     return null;
   }

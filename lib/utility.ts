@@ -10,12 +10,14 @@ export function getRandomNumber(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function processTetrominoes(boardState: BlockID[][], width: number, height: number, numberOfBlocks: number): BlockID[][] {
+export function processTetrominoes(boardState: BlockID[][], width: number, height: number, numberOfBlocks: number): {points: number, state: BlockID[][]} {
+  let awardedPoints = 0;
   let newBoardState = boardState.map(row => row.slice());
 
   for (let n = 0; n < numberOfBlocks; n++) {
     let tetrominoBlocks = checkTetromino(newBoardState, width, height, n + 1);
     if (tetrominoBlocks.length > 0) {
+      awardedPoints = awardedPoints + 1000 / 2;
       for (const [x, y] of tetrominoBlocks) {
         newBoardState[y][x] = 0;
       }
@@ -23,7 +25,7 @@ export function processTetrominoes(boardState: BlockID[][], width: number, heigh
     }
   }
 
-  return newBoardState;
+  return {points: awardedPoints, state: newBoardState};
 }
 
 export function dropFloatingBlocks(boardState: BlockID[][], width: number, height: number): BlockID[][] {
