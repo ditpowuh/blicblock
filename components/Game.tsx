@@ -4,7 +4,9 @@ import styles from "./Game.module.css";
 import {useState, useEffect, useRef} from "react";
 
 import Block from "@/components/Block";
-import {randomNumber, generateEmptyGrid} from "@/lib/utility";
+import {getRandomNumber, generateEmptyGrid, processTetrominoes} from "@/lib/utility";
+
+import type {BlockID} from "@/types";
 
 import CustomFont from "next/font/local";
 
@@ -12,8 +14,6 @@ const handwrittenSimlishFont = CustomFont({
   src: "../public/Fonts/Handwritten Simlish.woff2",
   fallback: ["sans-serif"]
 });
-
-type BlockID = number;
 
 interface GameProps {
   width: number;
@@ -25,7 +25,7 @@ interface GameProps {
 
 export default function Game({width, height, blockSize, blockGap, blockColors}: GameProps) {
   const [currentBlockPosition, setCurrentBlockPosition] = useState<{x: number, y: number}>({x: Math.ceil(width / 2), y: 1});
-  const [currentBlockQueue, setCurrentBlockQueue] = useState<number[]>(Array.from({length: 3}, () => randomNumber(1, blockColors.length)));
+  const [currentBlockQueue, setCurrentBlockQueue] = useState<number[]>(Array.from({length: 3}, () => getRandomNumber(1, blockColors.length)));
 
   const [boardState, setBoardState] = useState<BlockID[][]>(generateEmptyGrid(width, height));
 
@@ -37,6 +37,8 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
 
   const [level, setLevel] = useState<number>(1);
   const [score, setScore] = useState<number>(0);
+
+  const fastDrop = useRef<boolean>(false);
 
   const lastTime = useRef<number>(0);
   const lastDrop = useRef<number>(0);
@@ -80,6 +82,9 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
           return previous;
         });
       }
+      if (event.key === "ArrowDown") {
+        fastDrop.current = true;
+      }
     };
 
     window.addEventListener("keydown", handleKey);
@@ -93,7 +98,11 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
       const delta = time - lastTime.current;
       lastTime.current = time;
 
-      if (lastTime.current > lastDrop.current + dropSpeed + delay.current && !gameOver) {
+      setBoardState((board) => {
+        return processTetrominoes(board, width, height, blockColors.length);
+      });
+
+      if ((lastTime.current > lastDrop.current + dropSpeed + delay.current || fastDrop.current === true) && !gameOver) {
         setCurrentBlockPosition((previous) => {
           if (previous.y < height) {
             if (boardState[previous.y][previous.x - 1] === 0) {
@@ -107,16 +116,18 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
               setBoardState((board) => {
                 const newBoard = board.map(row => [...row]);
                 newBoard[previous.y - 1][previous.x - 1] = placed;
+
                 return newBoard;
               });
 
-              const newBlock = randomNumber(1, blockColors.length);
+              const newBlock = getRandomNumber(1, blockColors.length);
               return [...currentBlockQueue.slice(1), newBlock];
             });
           }
           else {
             setGameOver(true);
           }
+          fastDrop.current = false;
 
           return {x: Math.ceil(width / 2), y: 0};
         });
