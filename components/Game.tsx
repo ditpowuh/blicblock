@@ -21,19 +21,25 @@ interface GameProps {
   blockSize: number;
   blockGap: number;
   blockColors: string[];
+  startingLevel?: number;
+  startingDropSpeed?: number;
+  dropSpeedAccerlation: number;
+  onReset?: () => void;
 }
 
-export default function Game({width, height, blockSize, blockGap, blockColors}: GameProps) {
+export default function Game({width, height, blockSize, blockGap, blockColors, startingLevel = 1, startingDropSpeed = 1000, dropSpeedAccerlation, onReset}: GameProps) {
   const [currentBlockPosition, setCurrentBlockPosition] = useState<{x: number, y: number}>({x: Math.ceil(width / 2), y: 1});
   const [currentBlockQueue, setCurrentBlockQueue] = useState<number[]>(Array.from({length: 3}, () => getRandomNumber(1, blockColors.length)));
 
   const [boardState, setBoardState] = useState<BlockID[][]>(generateEmptyGrid(width, height));
 
-  const [dropSpeed, setDropSpeed] = useState<number>(1000);
+  const [dropSpeed, setDropSpeed] = useState<number>(startingDropSpeed);
   const [mounted, setMounted] = useState<boolean>(false);
 
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [gamePause, setGamePause] = useState<boolean>(false);
+
+  const [darkBackground, setDarkBackground] = useState<boolean>(true);
 
   const [level, setLevel] = useState<number>(1);
   const [score, setScore] = useState<number>(0);
@@ -42,7 +48,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
 
   const lastTime = useRef<number>(0);
   const lastDrop = useRef<number>(0);
-  const delay = useRef<number>(0);
+  const delay = useRef<number>(2000);
 
   const rafID = useRef<number>(0);
 
@@ -58,10 +64,21 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
 
   useEffect(() => {
     setMounted(true);
+
+    const startingScreenBackgroundInterval = setInterval(() => {
+      setDarkBackground(false);
+    }, 2000);
+
+    return () => {
+      clearInterval(startingScreenBackgroundInterval);
+    }
   }, []);
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
+      if (darkBackground || gameOver) {
+        return;
+      }
       if (event.key === "ArrowLeft") {
         setCurrentBlockPosition((previous) => {
           if (previous.x > 1 && previous.y > 0) {
@@ -96,7 +113,9 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
   useEffect(() => {
     const update = (time: number) => {
       const delta = time - lastTime.current;
-      lastTime.current = time;
+      if (!gameOver && !gamePause && !darkBackground) {
+        lastTime.current = time;
+      }
 
       setBoardState((board) => {
         const {points, state} = processTetrominoes(board, width, height, blockColors.length);
@@ -135,6 +154,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
         });
 
         lastDrop.current = lastTime.current;
+        delay.current = 0;
       }
 
       rafID.current = requestAnimationFrame(update);
@@ -150,13 +170,21 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
   }, [boardState, dropSpeed]);
 
   useEffect(() => {
-    setLevel(Math.floor(score / 4000) + 1);
+    setLevel(Math.floor(score / 4000) + startingLevel);
   }, [score]);
 
   useEffect(() => {
-    setDropSpeed(previous => previous - previous * 0.09)
+    setDropSpeed(previous => previous - previous * dropSpeedAccerlation);
   }, [level]);
-  
+
+  useEffect(() => {
+    if (level > 1) {
+      for (let i = 0; i < level - 1; i++) {
+        setDropSpeed(previous => previous - previous * dropSpeedAccerlation);
+      }
+    }
+  }, []);
+
   if (!mounted) {
     return null;
   }
@@ -196,6 +224,22 @@ export default function Game({width, height, blockSize, blockGap, blockColors}: 
             <Block color={colors[currentBlockQueue[2]]}/>
           </div>
         </div>
+      </div>
+      {(darkBackground || gameOver) && <div className={styles.darkscreen}></div>}
+      <div className={styles.overlayscreen} style={{display: !gameOver ? "none" : "inline"}}>
+        <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>GAME OVER</h1>
+        <div className={styles.bottomsection}>
+          <div className={styles.regulartext}>
+            <span>Your final score was:</span>
+            <br/>
+            <span style={{fontSize: "1.5em"}}>{score}</span>
+          </div>
+          <br/>
+          {onReset && <button className={`${styles.button} ${styles.regulartext}`} onClick={onReset}>Start a new game</button>}
+        </div>
+      </div>
+      <div className={`${styles.overlayscreen} ${styles.startscreen}`}>
+        <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#70c7c4"}}>START</h1>
       </div>
     </div>
   );
