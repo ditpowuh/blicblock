@@ -22,6 +22,7 @@ export default function Home() {
 
   return (
     <>
+      <title>Blicblock</title>
       <div className={styles.content}>
         <Game key={gameKey} width={5} height={7} blockSize={100} blockGap={4} blockColors={colors} dropSpeedAccerlation={0.09} onReset={resetGame}/>
       </div>
