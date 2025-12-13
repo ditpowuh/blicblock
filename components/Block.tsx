@@ -13,7 +13,7 @@ export default function Block({color = "#ffffff", x = 1, y = 1}: BlockProps) {
   };
 
   const position: React.CSSProperties = {
-    gridArea: (x == 0 || y == 0) ? "auto auto auto auto" : `${y} / ${x} / span 1 / span 1`
+    gridArea: (x === 0 || y === 0) ? "auto auto auto auto" : `${y} / ${x} / span 1 / span 1`
   };
 
   if (x === 0 || y === 0) {
