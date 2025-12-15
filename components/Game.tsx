@@ -39,7 +39,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [gamePause, setGamePause] = useState<boolean>(false);
 
-  const [darkBackground, setDarkBackground] = useState<boolean>(true);
+  const [startingScreenOn, setStartingScreenOn] = useState<boolean>(true);
 
   const [level, setLevel] = useState<number>(1);
   const [score, setScore] = useState<number>(0);
@@ -62,45 +62,54 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
     gap: blockGap
   };
 
+  const unpauseGame = () => {
+    setGamePause(false);
+  }
+
   useEffect(() => {
     setMounted(true);
 
-    const startingScreenBackgroundInterval = setInterval(() => {
-      setDarkBackground(false);
+    const startingScreenInterval = setInterval(() => {
+      setStartingScreenOn(false);
     }, 2000);
 
     return () => {
-      clearInterval(startingScreenBackgroundInterval);
+      clearInterval(startingScreenInterval);
     }
   }, []);
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (darkBackground || gameOver) {
+      if (startingScreenOn || gameOver) {
         return;
       }
-      if (event.key === "ArrowLeft") {
-        setCurrentBlockPosition((previous) => {
-          if (previous.x > 1 && previous.y > 0) {
-            if (boardState[previous.y - 1][previous.x - 2] === 0) {
-              return {x: previous.x - 1, y: previous.y};
-            }
-          }
-          return previous;
-        });
+      if (event.key === "Escape") {
+        setGamePause(previousState => !previousState);
       }
-      if (event.key === "ArrowRight") {
-        setCurrentBlockPosition((previous) => {
-          if (previous.x < width && previous.y > 0) {
-            if (boardState[previous.y - 1][previous.x] === 0) {
-              return {x: previous.x + 1, y: previous.y};
+      if (!gamePause) {
+        if (event.key === "ArrowLeft") {
+          setCurrentBlockPosition((previous) => {
+            if (previous.x > 1 && previous.y > 0) {
+              if (boardState[previous.y - 1][previous.x - 2] === 0) {
+                return {x: previous.x - 1, y: previous.y};
+              }
             }
-          }
-          return previous;
-        });
-      }
-      if (event.key === "ArrowDown") {
-        fastDrop.current = true;
+            return previous;
+          });
+        }
+        if (event.key === "ArrowRight") {
+          setCurrentBlockPosition((previous) => {
+            if (previous.x < width && previous.y > 0) {
+              if (boardState[previous.y - 1][previous.x] === 0) {
+                return {x: previous.x + 1, y: previous.y};
+              }
+            }
+            return previous;
+          });
+        }
+        if (event.key === "ArrowDown") {
+          fastDrop.current = true;
+        }
       }
     };
 
@@ -113,7 +122,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   useEffect(() => {
     const update = (time: number) => {
       const delta = time - lastTime.current;
-      if (!gameOver && !gamePause && !darkBackground) {
+      if (!gameOver && !gamePause && !startingScreenOn) {
         lastTime.current = time;
       }
 
@@ -225,7 +234,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
           </div>
         </div>
       </div>
-      {(darkBackground || gameOver) && <div className={styles.darkscreen}></div>}
+      {(startingScreenOn || gameOver || gamePause) && <div className={styles.darkscreen}></div>}
       <div className={styles.overlayscreen} style={{display: !gameOver ? "none" : "inline"}}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>GAME OVER</h1>
         <div className={styles.bottomsection}>
@@ -240,6 +249,11 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       </div>
       <div className={`${styles.overlayscreen} ${styles.startscreen}`}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#70c7c4"}}>START</h1>
+      </div>
+      <div className={styles.overlayscreen} style={{display: !gamePause ? "none" : "inline"}}>
+        <h1 className={styles.pausedtext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>PAUSED</h1>
+        <button className={`${styles.button} ${styles.regulartext}`} onClick={unpauseGame}>Resume Game</button>
+        <p className={styles.regulartext} style={{fontSize: 12}}>You can use ESC to pause/unpause.</p>
       </div>
     </div>
   );

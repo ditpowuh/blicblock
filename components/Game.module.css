@@ -85,6 +85,12 @@
   animation: slidedown 1s ease-in-out;
 }
 
+.pausedtext {
+  margin: 10px;
+  text-transform: lowercase;
+  font-weight: normal;
+}
+
 .button {
   background: rgba(255, 255, 255, 0.2);
   padding: 15px;
