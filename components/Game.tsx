@@ -117,11 +117,11 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
         lastTime.current = time;
       }
 
-      setBoardState((board) => {
-        const {points, state} = processTetrominoes(board, width, height, blockColors.length);
-        setScore(score => score + points);
-        return state;
-      });
+      const processedData = processTetrominoes(boardState, width, height, blockColors.length);
+      if (processedData.points > 0) {
+        setScore(score => score + processedData.points);
+      }
+      setBoardState(processedData.state);
 
       if ((lastTime.current > lastDrop.current + dropSpeed + delay.current || fastDrop.current === true) && !gameOver) {
         setCurrentBlockPosition((previous) => {

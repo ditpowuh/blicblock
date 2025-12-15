@@ -17,7 +17,7 @@ export function processTetrominoes(boardState: BlockID[][], width: number, heigh
   for (let n = 0; n < numberOfBlocks; n++) {
     let tetrominoBlocks = checkTetromino(newBoardState, width, height, n + 1);
     if (tetrominoBlocks.length > 0) {
-      awardedPoints = awardedPoints + 1000 / 2;
+      awardedPoints = awardedPoints + 1000;
       for (const [x, y] of tetrominoBlocks) {
         newBoardState[y][x] = 0;
       }
