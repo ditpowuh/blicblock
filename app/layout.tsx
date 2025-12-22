@@ -1,5 +1,4 @@
 import type {Metadata, Viewport} from "next";
-import {connection} from "next/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,9 +16,7 @@ interface RootLayoutProps {
   children?: React.ReactNode;
 }
 
-export default async function RootLayout({children}: RootLayoutProps) {
-  await connection();
-
+export default function RootLayout({children}: RootLayoutProps) {
   return (
     <html lang="en">
       <body>

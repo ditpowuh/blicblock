@@ -2,15 +2,14 @@
 import {useState, useEffect} from "react";
 
 interface IntegerTextInputProps {
-  value?: string | number;
   placeholder?: string | number;
   min?: number;
   max?: number;
   onChange: (value: string) => void;
 }
 
-export default function IntegerTextInput({value = "", placeholder = "", min = 0, max = Number.POSITIVE_INFINITY, onChange}: IntegerTextInputProps) {
-  const [currentValue, setCurrentValue] = useState<string>(String(value));
+export default function IntegerTextInput({placeholder = "", min = 0, max = Number.POSITIVE_INFINITY, onChange}: IntegerTextInputProps) {
+  const [currentValue, setCurrentValue] = useState<string>(String(placeholder));
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let input = event.target.value.replace(/\D/g, "");

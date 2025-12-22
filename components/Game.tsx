@@ -121,7 +121,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
           fastDrop.current = true;
         }
       }
-    };
+    }
 
     window.addEventListener("keydown", handleKey);
     return () => {
@@ -177,7 +177,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       }
 
       rafID.current = requestAnimationFrame(update);
-    };
+    }
 
     rafID.current = requestAnimationFrame(update);
 
@@ -185,7 +185,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       if (rafID.current) {
         cancelAnimationFrame(rafID.current);
       }
-    };
+    }
   }, [boardState, dropSpeed]);
 
   useEffect(() => {

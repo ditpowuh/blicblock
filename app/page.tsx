@@ -55,7 +55,7 @@ export default function Home() {
   const triggerPlay = () => {
     if (selectedGamemode === gamemodeInfo.length) {
       const params = new URLSearchParams(Object.entries(customSettings).map(([key, value]) => [key, String(value)]));
-      router.push("/custom?" + new URLSearchParams({...params}).toString());
+      router.push(`/custom?${params.toString()}`);
     }
     else {
       router.push(gamemodeInfo[selectedGamemode].target);
@@ -67,7 +67,7 @@ export default function Home() {
       ...previous,
       [key]: value === "" ? undefined : Number(value)
     }))
-  };
+  }
 
   return (
     <>
