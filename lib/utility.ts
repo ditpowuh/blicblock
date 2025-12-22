@@ -1,5 +1,9 @@
 import type {BlockID} from "@/types";
 
+export function getRandomHexColor(): string {
+  return "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+}
+
 export function generateEmptyGrid(width: number, height: number): BlockID[][] {
   return Array.from({length: height}, () => {
     return Array.from({length: width}, () => 0);
@@ -10,14 +14,56 @@ export function getRandomNumber(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function processTetrominoes(boardState: BlockID[][], width: number, height: number, numberOfBlocks: number): {points: number, state: BlockID[][]} {
+export function validateAsOddInteger(input: string | null, min: number = Number.NEGATIVE_INFINITY, max: number = Number.POSITIVE_INFINITY): number | null {
+  if (input === null || Number.isNaN(Number(input))) {
+    return null;
+  }
+  let finalNumber = Math.floor(Number(input));
+  if (finalNumber > max) {
+    return max;
+  }
+  if (finalNumber < min) {
+    return min;
+  }
+  return finalNumber % 2 === 1 ? finalNumber : finalNumber + 1;
+}
+
+export function validateAsInteger(input: string | null, min: number = Number.NEGATIVE_INFINITY, max: number = Number.POSITIVE_INFINITY): number | null {
+  if (input === null || Number.isNaN(Number(input))) {
+    return null;
+  }
+  let finalNumber = Math.floor(Number(input));
+  if (finalNumber > max) {
+    return max;
+  }
+  if (finalNumber < min) {
+    return min;
+  }
+  return finalNumber;
+}
+
+export function validateAsFloat(input: string | null, min: number = Number.NEGATIVE_INFINITY, max: number = Number.POSITIVE_INFINITY): number | null {
+  if (input === null || Number.isNaN(Number(input))) {
+    return null;
+  }
+  let finalNumber = Number(input);
+  if (finalNumber > max) {
+    return max;
+  }
+  if (finalNumber < min) {
+    return min;
+  }
+  return finalNumber;
+}
+
+export function processTetrominoes(boardState: BlockID[][], width: number, height: number, numberOfBlocks: number, rewardAmount: number[]): {points: number, state: BlockID[][]} {
   let awardedPoints = 0;
   let newBoardState = boardState.map(row => row.slice());
 
   for (let n = 0; n < numberOfBlocks; n++) {
     let tetrominoBlocks = checkTetromino(newBoardState, width, height, n + 1);
     if (tetrominoBlocks.length > 0) {
-      awardedPoints = awardedPoints + 1000;
+      awardedPoints = awardedPoints + getRandomNumber(rewardAmount[0], rewardAmount[1]);
       for (const [x, y] of tetrominoBlocks) {
         newBoardState[y][x] = 0;
       }

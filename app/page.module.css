@@ -1,3 +1,56 @@
-.content {
-  margin: auto;
+.homecontent {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.gamemodes {
+  display: flex;
+  gap: 20px;
+}
+
+.playbutton {
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 15px;
+  padding: 15px 30px;
+  margin: 10px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.playbutton:hover {
+  background: #cccccc;
+}
+
+.customsettings input {
+  background: rgba(0, 0, 0, 0.5);
+  display: block;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  outline: none;
+  font-weight: bold;
+  border-radius: 10px;
+  margin: 10px auto;
+  max-width: 100px;
+  text-align: center;
+}
+
+.customsettings div button {
+  background: rgba(0, 0, 0, 0.5);
+  text-align: center;
+  border: none;
+  color: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  margin: 0 7.5px;
+  cursor: pointer;
+}
+
+.customsettings div span {
+  font-size: 20px;
 }

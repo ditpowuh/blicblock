@@ -5,12 +5,26 @@ html, body {
 
 body {
   background: linear-gradient(0deg, #150d26 0%, #1d1136 50%, #150d26 100%);
+  font-family: Arial, Helvetica, sans-serif;
   color: #ffffff;
 }
 
 main {
   display: flex;
   min-height: 100%;
+}
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.gamecontent {
+  margin: auto;
 }
 
 .unselectable {

@@ -3,6 +3,8 @@ import styles from "./Game.module.css";
 
 import {useState, useEffect, useRef} from "react";
 
+import {useRouter} from "next/navigation";
+
 import Block from "@/components/Block";
 import {getRandomNumber, generateEmptyGrid, processTetrominoes} from "@/lib/utility";
 
@@ -23,11 +25,15 @@ interface GameProps {
   blockColors: string[];
   startingLevel?: number;
   startingDropSpeed?: number;
-  dropSpeedAccerlation: number;
+  dropSpeedAcceleration: number;
+  pointsPerTetromino?: number | number[];
+  levelUpIncrement: number;
   onReset?: () => void;
 }
 
-export default function Game({width, height, blockSize, blockGap, blockColors, startingLevel = 1, startingDropSpeed = 1000, dropSpeedAccerlation, onReset}: GameProps) {
+export default function Game({width, height, blockSize, blockGap, blockColors, startingLevel = 1, startingDropSpeed = 1000, dropSpeedAcceleration, pointsPerTetromino = 1000, levelUpIncrement, onReset}: GameProps) {
+  const router = useRouter();
+
   const [currentBlockPosition, setCurrentBlockPosition] = useState<{x: number, y: number}>({x: Math.ceil(width / 2), y: 1});
   const [currentBlockQueue, setCurrentBlockQueue] = useState<number[]>(Array.from({length: 3}, () => getRandomNumber(1, blockColors.length)));
 
@@ -64,6 +70,10 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
 
   const unpauseGame = () => {
     setGamePause(false);
+  }
+
+  const goBack = () => {
+    router.push("/");
   }
 
   useEffect(() => {
@@ -126,7 +136,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
         lastTime.current = time;
       }
 
-      const processedData = processTetrominoes(boardState, width, height, blockColors.length);
+      const processedData = processTetrominoes(boardState, width, height, blockColors.length, typeof pointsPerTetromino === "number" ? [pointsPerTetromino, pointsPerTetromino] : pointsPerTetromino);
       if (processedData.points > 0) {
         setScore(score => score + processedData.points);
       }
@@ -179,17 +189,19 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   }, [boardState, dropSpeed]);
 
   useEffect(() => {
-    setLevel(Math.floor(score / 4000) + startingLevel);
+    setLevel(Math.floor(score / levelUpIncrement) + startingLevel);
   }, [score]);
 
   useEffect(() => {
-    setDropSpeed(previous => previous - previous * dropSpeedAccerlation);
+    if (level !== startingLevel) {
+      setDropSpeed(previous => previous - previous * dropSpeedAcceleration);
+    }
   }, [level]);
 
   useEffect(() => {
-    if (level > 1) {
-      for (let i = 0; i < level - 1; i++) {
-        setDropSpeed(previous => previous - previous * dropSpeedAccerlation);
+    if (startingLevel > 1) {
+      for (let i = 0; i < startingLevel - 1; i++) {
+        setDropSpeed(previous => previous - previous * dropSpeedAcceleration);
       }
     }
   }, []);
@@ -244,15 +256,18 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
             <span style={{fontSize: "1.5em"}}>{score}</span>
           </div>
           <br/>
-          {onReset && <button className={`${styles.button} ${styles.regulartext}`} onClick={onReset}>Start a new game</button>}
+          {onReset && <><button className={`${styles.button} ${styles.regulartext}`} onClick={onReset}>Start a new game</button><br/></>}
+          <button className={`${styles.button} ${styles.regulartext}`} onClick={goBack}>Go Back</button>
         </div>
       </div>
       <div className={`${styles.overlayscreen} ${styles.startscreen}`}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#70c7c4"}}>START</h1>
       </div>
       <div className={styles.overlayscreen} style={{display: !gamePause ? "none" : "inline"}}>
-        <h1 className={styles.pausedtext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>PAUSED</h1>
+        <h1 className={styles.pausedtext} style={{fontSize: blockSize * 2}}>PAUSED</h1>
         <button className={`${styles.button} ${styles.regulartext}`} onClick={unpauseGame}>Resume Game</button>
+        <br/>
+        <button className={`${styles.button} ${styles.regulartext}`} onClick={goBack}>Go Back</button>
         <p className={styles.regulartext} style={{fontSize: 12}}>You can use ESC to pause/unpause.</p>
       </div>
     </div>

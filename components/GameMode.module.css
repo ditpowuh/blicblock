@@ -1,0 +1,38 @@
+.box {
+  background: rgba(0, 0, 0, 0.2);
+  border: 5px solid #000000;
+  padding: 20px 40px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.selected {
+  opacity: 1;
+}
+
+.description {
+  list-style-type: none;
+  padding: 0;
+  text-align: left;
+}
+
+.box input {
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.box.selected input {
+  pointer-events: auto;
+  cursor: text;
+}
+
+.box button {
+  pointer-events: none;
+}
+
+.box.selected button {
+  pointer-events: auto;
+}
