@@ -69,6 +69,13 @@ export default function Home() {
     }))
   }
 
+  useEffect(() => {
+    for (const gamemode of gamemodeInfo) {
+      router.prefetch(gamemode.target);
+    }
+    router.prefetch("/custom");
+  }, [router]);
+
   return (
     <>
       <title>Blicblock</title>

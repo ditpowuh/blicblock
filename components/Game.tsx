@@ -130,6 +130,10 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   }, [boardState, height, width]);
 
   useEffect(() => {
+    router.prefetch("/");
+  }, [router]);
+
+  useEffect(() => {
     const update = (time: number) => {
       const delta = time - lastTime.current;
       if (!gameOver && !gamePause && !startingScreenOn) {
