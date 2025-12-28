@@ -89,10 +89,10 @@ export default function Home() {
         <div className={styles.gamemodes}>
           {
             gamemodeInfo.map((gamemode, index) => (
-              <GameMode key={index} name={gamemode.name} description={gamemode.description} selected={index === selectedGamemode} onClick={(e) => setSelectedGamemode(index)}></GameMode>
+              <GameMode key={index} name={gamemode.name} description={gamemode.description} selected={index === selectedGamemode} style={{gridArea: `1 / ${index + 1} / 3 / ${index + 2}`}} onClick={(e) => setSelectedGamemode(index)}></GameMode>
             ))
           }
-          <GameMode name="Custom" description="Select your own settings" selected={selectedGamemode === gamemodeInfo.length} onClick={(e) => setSelectedGamemode(gamemodeInfo.length)}>
+          <GameMode name="Custom" description="Select your own settings" selected={selectedGamemode === gamemodeInfo.length} style={{gridArea: "1 / 3 / 4 / 4"}} onClick={(e) => setSelectedGamemode(gamemodeInfo.length)}>
             <div className={styles.customsettings}>
               <span>
                 <span>Board Width</span>
@@ -132,6 +132,18 @@ export default function Home() {
               <IntegerTextInput placeholder={1} min={1} onChange={handleNumberChange("startinglevel")}/>
             </div>
           </GameMode>
+          <div className={styles.instructions} style={{gridArea: "3 / 1 / 4 / 3"}}>
+            <h1>Controls</h1>
+            <p>
+              Left Arrow - Move block left
+              <br/>
+              Right Arrow - Move block right
+              <br/>
+              Down Arrow - Quick drop
+              <br/>
+              ESC - Pause/Unpause
+            </p>
+          </div>
         </div>
         <br/>
         <button className={styles.playbutton} onClick={triggerPlay}>Play</button>

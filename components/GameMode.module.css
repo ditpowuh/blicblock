@@ -5,7 +5,7 @@
   border-radius: 20px;
   font-weight: bold;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.375;
   transition: opacity 0.2s;
 }
 
