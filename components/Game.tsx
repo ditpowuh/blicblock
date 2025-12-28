@@ -7,6 +7,7 @@ import {useRouter} from "next/navigation";
 
 import Block from "@/components/Block";
 import {getRandomNumber, generateEmptyGrid, processTetrominoes} from "@/lib/utility";
+import audio from "@/lib/audio";
 
 import type {BlockID} from "@/types";
 
@@ -83,6 +84,8 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       setStartingScreenOn(false);
     }, 2000);
 
+    audio.playIntroSound();
+
     return () => {
       clearInterval(startingScreenInterval);
     }
@@ -142,6 +145,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
 
       const processedData = processTetrominoes(boardState, width, height, blockColors.length, typeof pointsPerTetromino === "number" ? [pointsPerTetromino, pointsPerTetromino] : pointsPerTetromino);
       if (processedData.points > 0) {
+        audio.playClearSound();
         setScore(score => score + processedData.points);
       }
       setBoardState(processedData.state);
@@ -169,8 +173,10 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
             });
           }
           else {
+            audio.playLoseSound();
             setGameOver(true);
           }
+          audio.playDropSound();
           fastDrop.current = false;
 
           return {x: Math.ceil(width / 2), y: 0};
