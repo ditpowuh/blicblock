@@ -4,7 +4,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png"
-  }
+  },
+  description: "Play a recreation of Blicblock from The Sims 4 in your browser."
 };
 
 export const viewport: Viewport = {
