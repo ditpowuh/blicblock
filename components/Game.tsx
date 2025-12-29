@@ -57,6 +57,8 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   const lastDrop = useRef<number>(0);
   const delay = useRef<number>(2000);
 
+  const pressedKeys = useRef<Set<string>>(new Set());
+
   const rafID = useRef<number>(0);
 
   const colors: Record<number, string> = Object.fromEntries(blockColors.map((color, index) => [index + 1, color]));
@@ -92,10 +94,14 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   }, []);
 
   useEffect(() => {
-    const handleKey = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (startingScreenOn || gameOver) {
         return;
       }
+      if (pressedKeys.current.has(event.key)) {
+        return;
+      }
+      pressedKeys.current.add(event.key);
       if (event.key === "Escape") {
         setGamePause(previousState => !previousState);
       }
@@ -126,9 +132,15 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       }
     }
 
-    window.addEventListener("keydown", handleKey);
+    const handleKeyUp = (event: KeyboardEvent) => {
+      pressedKeys.current.delete(event.key);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp)
     return () => {
-      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     }
   }, [boardState, height, width]);
 
