@@ -27,8 +27,8 @@ function initAudio() {
   introSound = new Audio("/Sounds/Intro.wav");
   loseSound = new Audio("/Sounds/Lose.wav");
 
-  [...dropSounds, ...clearSounds, introSound, loseSound].forEach(a => {
-    a.preload = "auto";
+  [...dropSounds, ...clearSounds, introSound, loseSound].forEach(audio => {
+    audio.preload = "auto";
   });
 }
 
