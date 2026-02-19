@@ -1,0 +1,27 @@
+.controls {
+  position: fixed;
+}
+
+.button {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.1);
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  padding: 25px;
+  bottom: 0;
+}
+
+.left {
+  left: 0;
+}
+
+.right {
+  right: 0;
+}
+
+.button img {
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+}

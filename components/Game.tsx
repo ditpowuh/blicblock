@@ -2,12 +2,17 @@
 import styles from "./Game.module.css";
 
 import {useState, useEffect, useRef} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 import {useRouter} from "next/navigation";
 
 import Block from "@/components/Block";
+import TouchscreenControls from "@/components/TouchscreenControls";
+
 import {getRandomNumber, generateEmptyGrid, processTetrominoes} from "@/lib/utility";
 import audio from "@/lib/audio";
+
+import {useGlobalSettingsStore} from "@/stores/GlobalSettingsStore";
 
 import type {BlockID} from "@/types";
 
@@ -34,6 +39,8 @@ interface GameProps {
 
 export default function Game({width, height, blockSize, blockGap, blockColors, startingLevel = 1, startingDropSpeed = 1000, dropSpeedAcceleration, pointsPerTetromino = 1000, levelUpIncrement, onReset}: GameProps) {
   const router = useRouter();
+
+  const [touchscreenMode, muteAudio] = useGlobalSettingsStore(useShallow((state) => [state.touchscreenMode, state.muteAudio]));
 
   const [currentBlockPosition, setCurrentBlockPosition] = useState<{x: number, y: number}>({x: Math.ceil(width / 2), y: 1});
   const [currentBlockQueue, setCurrentBlockQueue] = useState<number[]>(Array.from({length: 3}, () => getRandomNumber(1, blockColors.length)));
@@ -77,6 +84,28 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
     router.push("/");
   }
 
+  const moveBlockLeft = () => {
+    setCurrentBlockPosition((previous) => {
+      if (previous.x > 1 && previous.y > 0) {
+        if (boardState[previous.y - 1][previous.x - 2] === 0) {
+          return {x: previous.x - 1, y: previous.y};
+        }
+      }
+      return previous;
+    });
+  }
+
+  const moveBlockRight = () => {
+    setCurrentBlockPosition((previous) => {
+      if (previous.x < width && previous.y > 0) {
+        if (boardState[previous.y - 1][previous.x] === 0) {
+          return {x: previous.x + 1, y: previous.y};
+        }
+      }
+      return previous;
+    });
+  }
+
   useEffect(() => {
     setMounted(true);
 
@@ -84,7 +113,9 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       setStartingScreenOn(false);
     }, 2000);
 
-    audio.playIntroSound();
+    if (!muteAudio) {
+      audio.playIntroSound();
+    }
 
     return () => {
       clearInterval(startingScreenInterval);
@@ -101,24 +132,10 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       }
       if (!gamePause) {
         if (event.key === "ArrowLeft") {
-          setCurrentBlockPosition((previous) => {
-            if (previous.x > 1 && previous.y > 0) {
-              if (boardState[previous.y - 1][previous.x - 2] === 0) {
-                return {x: previous.x - 1, y: previous.y};
-              }
-            }
-            return previous;
-          });
+          moveBlockLeft();
         }
         if (event.key === "ArrowRight") {
-          setCurrentBlockPosition((previous) => {
-            if (previous.x < width && previous.y > 0) {
-              if (boardState[previous.y - 1][previous.x] === 0) {
-                return {x: previous.x + 1, y: previous.y};
-              }
-            }
-            return previous;
-          });
+          moveBlockRight();
         }
         if (event.key === "ArrowDown") {
           fastDrop.current = true;
@@ -145,7 +162,9 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
 
       const processedData = processTetrominoes(boardState, width, height, blockColors.length, typeof pointsPerTetromino === "number" ? [pointsPerTetromino, pointsPerTetromino] : pointsPerTetromino);
       if (processedData.points > 0) {
-        audio.playClearSound();
+        if (!muteAudio) {
+          audio.playClearSound();
+        }
         setScore(score => score + processedData.points);
       }
       setBoardState(processedData.state);
@@ -173,10 +192,14 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
             });
           }
           else {
-            audio.playLoseSound();
+            if (!muteAudio) {
+              audio.playLoseSound();
+            }
             setGameOver(true);
           }
-          audio.playDropSound();
+          if (!muteAudio) {
+            audio.playDropSound();
+          }
           fastDrop.current = false;
 
           return {x: Math.ceil(width / 2), y: 0};
@@ -221,7 +244,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   }
 
   return (
-    <div className={`${styles.game} ${handwrittenSimlishFont.className}`}>
+    <div className={`${styles.game} ${handwrittenSimlishFont.className}`} style={{transform: touchscreenMode ? `scale(${Math.min(window.innerWidth / 845, window.innerHeight / 1080)})` : undefined}}>
       <div className={styles.score} style={{width: blockSize * width + blockGap * (width - 1), fontSize: blockSize / 2, letterSpacing: blockSize / 15}}>
         <div className={`${styles.content} unselectable`} style={{paddingLeft: blockSize / 15}}>{score}</div>
       </div>
@@ -256,6 +279,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
           </div>
         </div>
       </div>
+      {touchscreenMode && <TouchscreenControls triggerLeft={moveBlockLeft} triggerRight={moveBlockRight}/>}
       {(startingScreenOn || gameOver || gamePause) && <div className={styles.darkscreen}></div>}
       <div className={styles.overlayscreen} style={{display: !gameOver ? "none" : "inline"}}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>GAME OVER</h1>
