@@ -1,12 +1,15 @@
 "use client";
 import styles from "./page.module.css";
 import {useState, useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 import {useRouter} from "next/navigation";
 
 import GameMode from "@/components/GameMode";
 import IntegerTextInput from "@/components/IntegerTextInput";
 import IntegerButtonInput from "@/components/IntegerButtonInput";
+
+import {useGlobalSettingsStore} from "@/stores/GlobalSettingsStore";
 
 import CustomFont from "next/font/local";
 
@@ -17,6 +20,9 @@ const handwrittenSimlishFont = CustomFont({
 
 export default function Home() {
   const router = useRouter();
+
+  const [touchscreenMode, setTouchscreenMode] = useGlobalSettingsStore(useShallow((state) => [state.touchscreenMode, state.setTouchscreenMode]));
+  const [muteAudio, setMuteAudio] = useGlobalSettingsStore(useShallow((state) => [state.muteAudio, state.setMuteAudio]));
 
   const [selectedGamemode, setSelectedGamemode] = useState<number>(1);
   const [customSettings, setCustomSettings] = useState({
@@ -48,7 +54,8 @@ export default function Home() {
         "1000 points every tetromino",
         "Level up every 4000 points"
       ],
-      target: "/normal"
+      target: "/normal",
+      tag: "Recommended"
     }
   ];
 
@@ -89,7 +96,7 @@ export default function Home() {
         <div className={styles.gamemodes}>
           {
             gamemodeInfo.map((gamemode, index) => (
-              <GameMode key={index} name={gamemode.name} description={gamemode.description} selected={index === selectedGamemode} style={{gridArea: `1 / ${index + 1} / 3 / ${index + 2}`}} onClick={(e) => setSelectedGamemode(index)}></GameMode>
+              <GameMode key={index} name={gamemode.name} description={gamemode.description} selected={index === selectedGamemode} tag={gamemode.tag} style={{gridArea: `1 / ${index + 1} / 3 / ${index + 2}`}} onClick={(e) => setSelectedGamemode(index)}></GameMode>
             ))
           }
           <GameMode name="Custom" description="Select your own settings" selected={selectedGamemode === gamemodeInfo.length} style={{gridArea: "1 / 3 / 4 / 4"}} onClick={(e) => setSelectedGamemode(gamemodeInfo.length)}>
@@ -132,17 +139,28 @@ export default function Home() {
               <IntegerTextInput placeholder={1} min={1} onChange={handleNumberChange("startinglevel")}/>
             </div>
           </GameMode>
-          <div className={styles.instructions} style={{gridArea: "3 / 1 / 4 / 3"}}>
-            <h1>Controls</h1>
-            <p>
-              Left Arrow - Move block left
-              <br/>
-              Right Arrow - Move block right
-              <br/>
-              Down Arrow - Quick drop
-              <br/>
-              ESC - Pause/Unpause
-            </p>
+          <div className={styles.bottompanel} style={{gridArea: "3 / 1 / 4 / 3"}}>
+            <div>
+              <h1>Controls</h1>
+              <p>
+                Left Arrow - Move block left
+                <br/>
+                Right Arrow - Move block right
+                <br/>
+                Down Arrow - Quick drop
+                <br/>
+                ESC - Pause/Unpause
+              </p>
+            </div>
+            <div>
+              <h1>Settings</h1>
+              <div className={styles.border}>
+                <label className={`${styles.checkboxsetting} unselectable`}><input type="checkbox" checked={touchscreenMode} onChange={(e) => setTouchscreenMode(e.target.checked)}/>Touchscreen mode</label>
+                <br/>
+                <label className={`${styles.checkboxsetting} unselectable`}><input type="checkbox" checked={muteAudio} onChange={(e) => setMuteAudio(e.target.checked)}/>Mute audio</label>
+                <br/>
+              </div>
+            </div>
           </div>
         </div>
         <br/>

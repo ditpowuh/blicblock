@@ -12,12 +12,13 @@
 
 .playbutton {
   background: #ffffff;
+  color: #000000;
   font-size: 16px;
   font-weight: bold;
   border: none;
   border-radius: 15px;
   padding: 15px 30px;
-  margin: 10px 0;
+  margin: 10px 0 30px 0;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -26,12 +27,34 @@
   background: #cccccc;
 }
 
-.instructions {
+.bottompanel {
+  display: flex;
+  flex-direction: row;
   background: rgba(255, 255, 255, 0.1);
   border: 5px solid rgba(255, 255, 255, 0.2);
   padding: 20px 40px;
   border-radius: 20px;
   font-weight: bold;
+}
+
+.bottompanel div {
+  width: 100%;
+}
+
+.bottompanel input[type="checkbox"] {
+  margin: 3px 5px;
+}
+
+.bottompanel .border {
+  box-sizing: border-box;
+  text-align: left;
+  padding: 15px;
+  border: 5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+}
+
+.bottompanel .checkboxsetting {
+  cursor: pointer;
 }
 
 .customsettings input {
@@ -63,4 +86,19 @@
 
 .customsettings div span {
   font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .gamemodes {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gamemodes div {
+    margin: 0 auto;
+  }
+
+  .bottompanel {
+    flex-direction: column;
+  }
 }

@@ -29,11 +29,12 @@ interface GameModeProps {
   name: string;
   description: string[] | string;
   selected?: boolean;
+  tag?: string | null;
   style?: React.CSSProperties;
   onClick: React.MouseEventHandler<HTMLDivElement>;
 }
 
-export default function GameMode({children, name, description, selected = false, style, onClick}: GameModeProps) {
+export default function GameMode({children, name, description, selected = false, tag, style, onClick}: GameModeProps) {
   return (
     <div className={selected ? `${styles.box} ${styles.selected} unselectable` : `${styles.box} unselectable`} style={{width: 300, ...style}} onClick={onClick}>
       <h1>
@@ -43,6 +44,7 @@ export default function GameMode({children, name, description, selected = false,
       </h1>
       <Description content={description}/>
       {children}
+      {tag && <div className={styles.tag}>{tag}</div>}
     </div>
   );
 }
