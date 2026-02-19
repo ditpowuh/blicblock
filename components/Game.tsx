@@ -57,8 +57,6 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   const lastDrop = useRef<number>(0);
   const delay = useRef<number>(2000);
 
-  const pressedKeys = useRef<Set<string>>(new Set());
-
   const rafID = useRef<number>(0);
 
   const colors: Record<number, string> = Object.fromEntries(blockColors.map((color, index) => [index + 1, color]));
@@ -94,14 +92,10 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   }, []);
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKey = (event: KeyboardEvent) => {
       if (startingScreenOn || gameOver) {
         return;
       }
-      if (pressedKeys.current.has(event.key)) {
-        return;
-      }
-      pressedKeys.current.add(event.key);
       if (event.key === "Escape") {
         setGamePause(previousState => !previousState);
       }
@@ -132,15 +126,9 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       }
     }
 
-    const handleKeyUp = (event: KeyboardEvent) => {
-      pressedKeys.current.delete(event.key);
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp)
+    window.addEventListener("keydown", handleKey);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("keydown", handleKey);
     }
   }, [boardState, height, width]);
 
@@ -288,6 +276,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       <div className={styles.overlayscreen} style={{display: !gamePause ? "none" : "inline"}}>
         <h1 className={styles.pausedtext} style={{fontSize: blockSize * 2}}>PAUSED</h1>
         <button className={`${styles.button} ${styles.regulartext}`} onClick={unpauseGame}>Resume Game</button>
+        {onReset && <><br/><button className={`${styles.button} ${styles.regulartext}`} onClick={onReset}>Restart</button></>}
         <br/>
         <button className={`${styles.button} ${styles.regulartext}`} onClick={goBack}>Go Back</button>
         <p className={styles.regulartext} style={{fontSize: 12}}>You can use ESC to pause/unpause.</p>
