@@ -3,14 +3,18 @@ import styles from "./TouchscreenControls.module.css";
 interface TouchscreenControlsProps {
   triggerLeft: () => void;
   triggerRight: () => void;
+  triggerDrop: () => void;
   pauseGame: () => void;
 }
 
-export default function TouchscreenControls({triggerLeft, triggerRight, pauseGame}: TouchscreenControlsProps) {
+export default function TouchscreenControls({triggerLeft, triggerRight, triggerDrop, pauseGame}: TouchscreenControlsProps) {
   return (
     <div className={styles.controls}>
       <div className={`${styles.textbutton} ${styles.left}`} onClick={pauseGame}>
         Pause
+      </div>
+      <div className={`${styles.textbutton} ${styles.right}`} onClick={triggerDrop}>
+        Drop
       </div>
       <div className={`${styles.roundbutton} ${styles.left}`} onClick={triggerLeft}>
         <img className="unselectable" src="/Images/LeftArrow.svg"/>

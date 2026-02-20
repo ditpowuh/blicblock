@@ -226,7 +226,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
           </div>
         </div>
       </div>
-      {touchscreenMode && <TouchscreenControls triggerLeft={moveBlockLeft} triggerRight={moveBlockRight} pauseGame={pauseGame}/>}
+      {touchscreenMode && <TouchscreenControls triggerLeft={moveBlockLeft} triggerRight={moveBlockRight} triggerDrop={triggerDrop} pauseGame={pauseGame}/>}
       {(state.startingScreenOn || state.gameOver || state.gamePause) && <div className={styles.darkscreen}></div>}
       <div className={styles.overlayscreen} style={{display: !state.gameOver ? "none" : "inline"}}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>GAME OVER</h1>
