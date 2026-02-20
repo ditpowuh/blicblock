@@ -76,6 +76,10 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
     gap: blockGap
   };
 
+  const pauseGame = () => {
+    setGamePause(true);
+  }
+
   const unpauseGame = () => {
     setGamePause(false);
   }
@@ -279,7 +283,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
           </div>
         </div>
       </div>
-      {touchscreenMode && <TouchscreenControls triggerLeft={moveBlockLeft} triggerRight={moveBlockRight}/>}
+      {touchscreenMode && <TouchscreenControls triggerLeft={moveBlockLeft} triggerRight={moveBlockRight} pauseGame={pauseGame}/>}
       {(startingScreenOn || gameOver || gamePause) && <div className={styles.darkscreen}></div>}
       <div className={styles.overlayscreen} style={{display: !gameOver ? "none" : "inline"}}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>GAME OVER</h1>
