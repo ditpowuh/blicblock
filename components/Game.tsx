@@ -1,7 +1,7 @@
 "use client";
 import styles from "./Game.module.css";
 
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect, useRef, useReducer, useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 import {useRouter} from "next/navigation";
@@ -9,12 +9,10 @@ import {useRouter} from "next/navigation";
 import Block from "@/components/Block";
 import TouchscreenControls from "@/components/TouchscreenControls";
 
-import {getRandomNumber, generateEmptyGrid, processTetrominoes} from "@/lib/utility";
+import {GameState, createInitialState, gameReducer} from "@/lib/reducer/game";
 import audio from "@/lib/audio";
 
 import {useGlobalSettingsStore} from "@/stores/GlobalSettingsStore";
-
-import type {BlockID} from "@/types";
 
 import CustomFont from "next/font/local";
 
@@ -41,30 +39,28 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   const router = useRouter();
 
   const [touchscreenMode, muteAudio] = useGlobalSettingsStore(useShallow((state) => [state.touchscreenMode, state.muteAudio]));
-
-  const [currentBlockPosition, setCurrentBlockPosition] = useState<{x: number, y: number}>({x: Math.ceil(width / 2), y: 1});
-  const [currentBlockQueue, setCurrentBlockQueue] = useState<number[]>(Array.from({length: 3}, () => getRandomNumber(1, blockColors.length)));
-
-  const [boardState, setBoardState] = useState<BlockID[][]>(generateEmptyGrid(width, height));
-
-  const [dropSpeed, setDropSpeed] = useState<number>(startingDropSpeed);
   const [mounted, setMounted] = useState<boolean>(false);
 
-  const [gameOver, setGameOver] = useState<boolean>(false);
-  const [gamePause, setGamePause] = useState<boolean>(false);
+  const pointsToAward = typeof pointsPerTetromino === "number" ? [pointsPerTetromino, pointsPerTetromino] : pointsPerTetromino;
+  const numberOfColors = blockColors.length;
 
-  const [startingScreenOn, setStartingScreenOn] = useState<boolean>(true);
+  const [state, dispatch] = useReducer(gameReducer, {
+    width,
+    height,
+    numberOfColors,
+    startingLevel,
+    startingDropSpeed,
+    dropSpeedAcceleration
+  }, (config) => {
+    return createInitialState(config.width, config.height, config.numberOfColors, config.startingLevel, config.startingDropSpeed, config.dropSpeedAcceleration);
+  });
 
-  const [level, setLevel] = useState<number>(1);
-  const [score, setScore] = useState<number>(0);
+  const rafIDRef = useRef<number>(0);
+  const stateRef = useRef<GameState>(state);
 
-  const fastDrop = useRef<boolean>(false);
+  const previousStateRef = useRef<GameState | null>(null);
 
-  const lastTime = useRef<number>(0);
-  const lastDrop = useRef<number>(0);
-  const delay = useRef<number>(2000);
-
-  const rafID = useRef<number>(0);
+  stateRef.current = state;
 
   const colors: Record<number, string> = Object.fromEntries(blockColors.map((color, index) => [index + 1, color]));
 
@@ -76,45 +72,35 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
     gap: blockGap
   };
 
-  const pauseGame = () => {
-    setGamePause(true);
-  }
+  const pauseGame = useCallback(() => {
+    dispatch({type: "Pause"});
+  }, []);
 
-  const unpauseGame = () => {
-    setGamePause(false);
-  }
+  const unpauseGame = useCallback(() => {
+    dispatch({type: "Unpause"});
+  }, []);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     router.push("/");
-  }
+  }, [router]);
 
-  const moveBlockLeft = () => {
-    setCurrentBlockPosition((previous) => {
-      if (previous.x > 1 && previous.y > 0) {
-        if (boardState[previous.y - 1][previous.x - 2] === 0) {
-          return {x: previous.x - 1, y: previous.y};
-        }
-      }
-      return previous;
-    });
-  }
+  const moveBlockLeft = useCallback(() => {
+    dispatch({type: "MoveLeft", width, height});
+  }, [width, height]);
 
-  const moveBlockRight = () => {
-    setCurrentBlockPosition((previous) => {
-      if (previous.x < width && previous.y > 0) {
-        if (boardState[previous.y - 1][previous.x] === 0) {
-          return {x: previous.x + 1, y: previous.y};
-        }
-      }
-      return previous;
-    });
-  }
+  const moveBlockRight = useCallback(() => {
+    dispatch({type: "MoveRight", width, height});
+  }, [width, height]);
+
+  const triggerDrop = useCallback(() => {
+    dispatch({type: "Drop", width, height});
+  }, [width, height]);
 
   useEffect(() => {
     setMounted(true);
 
-    const startingScreenInterval = setInterval(() => {
-      setStartingScreenOn(false);
+    const startingScreenInterval = setTimeout(() => {
+      dispatch({type: "DismissStartScreen"});
     }, 2000);
 
     if (!muteAudio) {
@@ -122,19 +108,18 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
     }
 
     return () => {
-      clearInterval(startingScreenInterval);
+      clearTimeout(startingScreenInterval);
     }
-  }, []);
+  }, [muteAudio]);
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (startingScreenOn || gameOver) {
-        return;
-      }
+      const currentState = stateRef.current;
+      if (currentState.startingScreenOn || currentState.gameOver) return;
       if (event.key === "Escape") {
-        setGamePause(previousState => !previousState);
+        dispatch(currentState.gamePause ? {type: "Unpause"} : {type: "Pause"});
       }
-      if (!gamePause) {
+      if (!currentState.gamePause) {
         if (event.key === "ArrowLeft") {
           moveBlockLeft();
         }
@@ -142,7 +127,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
           moveBlockRight();
         }
         if (event.key === "ArrowDown") {
-          fastDrop.current = true;
+          triggerDrop();
         }
       }
     }
@@ -151,97 +136,55 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
     return () => {
       window.removeEventListener("keydown", handleKey);
     }
-  }, [boardState, height, width]);
+  }, [moveBlockLeft, moveBlockRight, triggerDrop]);
 
   useEffect(() => {
     router.prefetch("/");
   }, [router]);
 
   useEffect(() => {
-    const update = (time: number) => {
-      const delta = time - lastTime.current;
-      if (!gameOver && !gamePause && !startingScreenOn) {
-        lastTime.current = time;
-      }
+    function update(time: number) {
+      dispatch({
+        type: "Tick",
+        time,
+        fastDrop: false,
+        width,
+        height,
+        numberOfColors,
+        pointsPerTetromino: pointsToAward,
+        levelUpIncrement,
+        startingLevel,
+        dropSpeedAcceleration
+      });
 
-      const processedData = processTetrominoes(boardState, width, height, blockColors.length, typeof pointsPerTetromino === "number" ? [pointsPerTetromino, pointsPerTetromino] : pointsPerTetromino);
-      if (processedData.points > 0) {
-        if (!muteAudio) {
-          audio.playClearSound();
-        }
-        setScore(score => score + processedData.points);
-      }
-      setBoardState(processedData.state);
-
-      if ((lastTime.current > lastDrop.current + dropSpeed + delay.current || fastDrop.current === true) && !gameOver) {
-        setCurrentBlockPosition((previous) => {
-          if (previous.y < height) {
-            if (boardState[previous.y][previous.x - 1] === 0) {
-              return {x: previous.x, y: previous.y + 1};
-            }
-          }
-
-          if (previous.y !== 0) {
-            setCurrentBlockQueue((queue) => {
-              const placed = currentBlockQueue[0];
-              setBoardState((board) => {
-                const newBoard = board.map(row => [...row]);
-                newBoard[previous.y - 1][previous.x - 1] = placed;
-
-                return newBoard;
-              });
-
-              const newBlock = getRandomNumber(1, blockColors.length);
-              return [...currentBlockQueue.slice(1), newBlock];
-            });
-          }
-          else {
-            if (!muteAudio) {
-              audio.playLoseSound();
-            }
-            setGameOver(true);
-          }
-          if (!muteAudio) {
-            audio.playDropSound();
-          }
-          fastDrop.current = false;
-
-          return {x: Math.ceil(width / 2), y: 0};
-        });
-
-        lastDrop.current = lastTime.current;
-        delay.current = 0;
-      }
-
-      rafID.current = requestAnimationFrame(update);
+      rafIDRef.current = requestAnimationFrame(update);
     }
 
-    rafID.current = requestAnimationFrame(update);
+    rafIDRef.current = requestAnimationFrame(update);
 
     return () => {
-      if (rafID.current) {
-        cancelAnimationFrame(rafID.current);
+      if (rafIDRef.current) {
+        cancelAnimationFrame(rafIDRef.current);
       }
     }
-  }, [boardState, dropSpeed]);
+  }, [width, height, numberOfColors, levelUpIncrement, startingLevel, dropSpeedAcceleration, pointsToAward]);
 
   useEffect(() => {
-    setLevel(Math.floor(score / levelUpIncrement) + startingLevel);
-  }, [score]);
-
-  useEffect(() => {
-    if (level !== startingLevel) {
-      setDropSpeed(previous => previous - previous * dropSpeedAcceleration);
-    }
-  }, [level]);
-
-  useEffect(() => {
-    if (startingLevel > 1) {
-      for (let i = 0; i < startingLevel - 1; i++) {
-        setDropSpeed(previous => previous - previous * dropSpeedAcceleration);
+    const previousState = previousStateRef.current;
+    if (!muteAudio && previousState !== null) {
+      if (state.gameOver && !previousState.gameOver) {
+        audio.playLoseSound();
+      }
+      else if (state.score > previousState.score) {
+        audio.playClearSound();
+      }
+      else if (state.currentBlockPosition.y === 0 && previousState.currentBlockPosition.y > 0 && !state.gameOver) {
+        audio.playDropSound();
       }
     }
-  }, []);
+
+    previousStateRef.current = state;
+  }, [state, muteAudio]);
 
   if (!mounted) {
     return null;
@@ -250,19 +193,19 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   return (
     <div className={`${styles.game} ${handwrittenSimlishFont.className}`} style={{transform: touchscreenMode ? `scale(${Math.min(window.innerWidth / 845, window.innerHeight / 1080)})` : undefined}}>
       <div className={styles.score} style={{width: blockSize * width + blockGap * (width - 1), fontSize: blockSize / 2, letterSpacing: blockSize / 15}}>
-        <div className={`${styles.content} unselectable`} style={{paddingLeft: blockSize / 15}}>{score}</div>
+        <div className={`${styles.content} unselectable`} style={{paddingLeft: blockSize / 15}}>{state.score}</div>
       </div>
       <div className={styles.main}>
         <div className={styles.levelpanel} style={{width: blockSize * 1.5, height: blockSize * 1.5}}>
           <div className={`${styles.content} unselectable`}>
             <div style={{fontSize: blockSize / 3, marginTop: blockSize / 3}}>LEVEL</div>
-            <div style={{fontSize: blockSize / 2, marginTop: blockSize / 9, letterSpacing: blockSize / 15}}>{level}</div>
+            <div style={{fontSize: blockSize / 2, marginTop: blockSize / 9, letterSpacing: blockSize / 15}}>{state.level}</div>
           </div>
         </div>
         <div className={styles.board} style={{...sizing}}>
-          {!gameOver && <Block color={colors[currentBlockQueue[0]]} x={currentBlockPosition.x} y={currentBlockPosition.y}/>}
+          {!state.gameOver && <Block color={colors[state.currentBlockQueue[0]]} x={state.currentBlockPosition.x} y={state.currentBlockPosition.y}/>}
           {
-            boardState.map((row, rowIndex) => {
+            state.board.map((row, rowIndex) => {
               return row.map((cell, colIndex) => {
                 if (cell !== 0) {
                   return (
@@ -276,22 +219,22 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
         </div>
         <div className={styles.upcomingpanel} style={{width: blockSize * 1.5, height: blockSize * 3}}>
           <div className={styles.upcomingblocks} style={{width: blockSize * 0.75, height: blockSize * 0.75, marginTop: blockSize * 1.5 / 4, marginBottom: blockSize * 1.5 / 2}}>
-            <Block color={colors[currentBlockQueue[1]]}/>
+            <Block color={colors[state.currentBlockQueue[1]]}/>
           </div>
           <div className={styles.upcomingblocks} style={{width: blockSize * 0.75, height: blockSize * 0.75, marginTop: blockSize * 1.5 / 2, marginBottom: blockSize * 1.5 / 4}}>
-            <Block color={colors[currentBlockQueue[2]]}/>
+            <Block color={colors[state.currentBlockQueue[2]]}/>
           </div>
         </div>
       </div>
       {touchscreenMode && <TouchscreenControls triggerLeft={moveBlockLeft} triggerRight={moveBlockRight} pauseGame={pauseGame}/>}
-      {(startingScreenOn || gameOver || gamePause) && <div className={styles.darkscreen}></div>}
-      <div className={styles.overlayscreen} style={{display: !gameOver ? "none" : "inline"}}>
+      {(state.startingScreenOn || state.gameOver || state.gamePause) && <div className={styles.darkscreen}></div>}
+      <div className={styles.overlayscreen} style={{display: !state.gameOver ? "none" : "inline"}}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#c49e23"}}>GAME OVER</h1>
         <div className={styles.bottomsection}>
           <div className={styles.regulartext}>
             <span>Your final score was:</span>
             <br/>
-            <span style={{fontSize: "1.5em"}}>{score}</span>
+            <span style={{fontSize: "1.5em"}}>{state.score}</span>
           </div>
           <br/>
           {onReset && <><button className={`${styles.button} ${styles.regulartext}`} onClick={onReset}>Start a new game</button><br/></>}
@@ -301,7 +244,7 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
       <div className={`${styles.overlayscreen} ${styles.startscreen}`}>
         <h1 className={styles.titletext} style={{fontSize: blockSize * 2, color: "#70c7c4"}}>START</h1>
       </div>
-      <div className={styles.overlayscreen} style={{display: !gamePause ? "none" : "inline"}}>
+      <div className={styles.overlayscreen} style={{display: !state.gamePause ? "none" : "inline"}}>
         <h1 className={styles.pausedtext} style={{fontSize: blockSize * 2}}>PAUSED</h1>
         <button className={`${styles.button} ${styles.regulartext}`} onClick={unpauseGame}>Resume Game</button>
         {onReset && <><br/><button className={`${styles.button} ${styles.regulartext}`} onClick={onReset}>Restart</button></>}
