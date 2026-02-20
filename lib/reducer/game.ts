@@ -2,8 +2,6 @@ import {getRandomNumber, generateEmptyGrid, processTetrominoes} from "@/lib/util
 
 import type {BlockID} from "@/types";
 
-type ActionType = "DismissStartScreen" | "Pause" | "Unpause" | "MoveLeft" | "MoveRight" | "Drop" | "Tick";
-
 export interface GameState {
   board: BlockID[][];
   currentBlockPosition: {x: number, y: number};
@@ -20,8 +18,38 @@ export interface GameState {
   dropTargetY: number | null;
 }
 
-interface GameAction {
-  type: ActionType;
+interface DismissStartScreenAction {
+  type: "DismissStartScreen";
+}
+
+interface PauseAction {
+  type: "Pause";
+}
+
+interface UnpauseAction {
+  type: "Unpause";
+}
+
+interface MoveLeftAction {
+  type: "MoveLeft";
+  width: number;
+  height: number;
+}
+
+interface MoveRightAction {
+  type: "MoveRight";
+  width: number;
+  height: number;
+}
+
+interface DropAction {
+  type: "Drop";
+  width: number;
+  height: number;
+}
+
+interface TickAction {
+  type: "Tick";
   time: number;
   fastDrop: boolean;
   width: number;
@@ -32,6 +60,8 @@ interface GameAction {
   startingLevel: number;
   dropSpeedAcceleration: number;
 }
+
+type GameAction = DismissStartScreenAction | PauseAction | UnpauseAction | MoveLeftAction | MoveRightAction | DropAction | TickAction;
 
 function getInitialDropSpeed(startingDropSpeed: number, startingLevel: number, dropSpeedAcceleration: number): number {
   let speed = startingDropSpeed;
