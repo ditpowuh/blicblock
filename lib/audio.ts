@@ -39,7 +39,7 @@ export function playDropSound() {
   }
   const sound = dropSounds[Math.floor(Math.random() * dropSounds.length)];
   sound.currentTime = 0;
-  sound.play();
+  sound.play().catch(() => {});
 }
 
 export function playClearSound() {
@@ -49,7 +49,7 @@ export function playClearSound() {
   }
   const sound = clearSounds[Math.floor(Math.random() * clearSounds.length)];
   sound.currentTime = 0;
-  sound.play();
+  sound.play().catch(() => {});
 }
 
 export function playIntroSound() {
@@ -58,7 +58,7 @@ export function playIntroSound() {
     return;
   }
   introSound.currentTime = 0;
-  introSound.play();
+  introSound.play().catch(() => {});
 }
 
 export function playLoseSound() {
@@ -67,7 +67,7 @@ export function playLoseSound() {
     return;
   }
   loseSound.currentTime = 0;
-  loseSound.play();
+  loseSound.play().catch(() => {});
 }
 
 export default {
