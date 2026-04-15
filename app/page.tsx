@@ -87,11 +87,12 @@ export default function Home() {
     <>
       <title>Blicblock</title>
       <div className={styles.homecontent}>
-        <h1 style={{fontSize: 64}}>
+        <h1 style={{fontSize: 64, marginBottom: 0}}>
           <span className={handwrittenSimlishFont.className} style={{fontWeight: "normal"}}>Welcome to</span>
           <br/>
           <span style={{fontSize: 96, textTransform: "uppercase"}}>Blicblock</span>
         </h1>
+        <h2 style={{fontSize: 16, marginTop: 0, marginBottom: 32}}>Play a recreation of Blicblock from The Sims 4 in your browser.</h2>
         <h2>Select a gamemode</h2>
         <div className={styles.gamemodes}>
           {
