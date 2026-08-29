@@ -56,7 +56,7 @@ export function validateAsFloat(input: string | null, min: number = Number.NEGAT
   return finalNumber;
 }
 
-export function processTetrominoes(boardState: BlockID[][], width: number, height: number, numberOfBlocks: number, rewardAmount: number[]): {points: number, state: BlockID[][]} {
+export function processTetrominoes(boardState: BlockID[][], width: number, height: number, numberOfBlocks: number, rewardAmount: [number, number]): {points: number, state: BlockID[][]} {
   let awardedPoints = 0;
   let newBoardState = boardState.map(row => row.slice());
 

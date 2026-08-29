@@ -30,7 +30,7 @@ interface GameProps {
   startingLevel?: number;
   startingDropSpeed?: number;
   dropSpeedAcceleration: number;
-  pointsPerTetromino?: number | number[];
+  pointsPerTetromino?: number | [number, number];
   levelUpIncrement: number;
   onReset?: () => void;
 }
@@ -41,8 +41,8 @@ export default function Game({width, height, blockSize, blockGap, blockColors, s
   const [touchscreenMode, muteAudio] = useGlobalSettingsStore(useShallow((state) => [state.touchscreenMode, state.muteAudio]));
   const [mounted, setMounted] = useState<boolean>(false);
 
-  const pointsToAward = typeof pointsPerTetromino === "number" ? [pointsPerTetromino, pointsPerTetromino] : pointsPerTetromino;
-  const numberOfColors = blockColors.length;
+  const pointsToAward: [number, number] = typeof pointsPerTetromino === "number" ? [pointsPerTetromino, pointsPerTetromino] : pointsPerTetromino;
+  const numberOfColors: number = blockColors.length;
 
   const [state, dispatch] = useReducer(gameReducer, {
     width,

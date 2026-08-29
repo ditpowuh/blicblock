@@ -55,7 +55,7 @@ interface TickAction {
   width: number;
   height: number;
   numberOfColors: number;
-  pointsPerTetromino: number[];
+  pointsPerTetromino: [number, number];
   levelUpIncrement: number;
   startingLevel: number;
   dropSpeedAcceleration: number;
